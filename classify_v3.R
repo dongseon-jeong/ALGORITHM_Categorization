@@ -13,37 +13,24 @@ library(KoNLP)
 
 rm(list=ls())
 
-file_path <- "C:/Users/jeong/OneDrive/바탕 화면"
-file_path2 <- "C:/Users/jeong/OneDrive/crema/project/category_sales_analytics/data_extract"
-
+file_path <- "your_path"
 setwd(file_path)
 
-
+# 패션 상품 리스트
 fa <- fread(file.path(file_path,"fashion_categories.csv"),encoding = "UTF-8")
+# 패션 고객사 정보
 mallid <- fread(file.path(file_path,"fashion_mall_list.csv"),encoding = "UTF-8")
 #고객사 필터
 mlist <- unique(mallid$brand_code)
 
-pro <- fread(file.path(file_path2,"products_musinsa.csv"),encoding = "UTF-8")
-pro1 <- fread(file.path(file_path2,"products_uni.csv"),encoding = "UTF-8")
-pro1 <- pro1 %>% mutate(brand_code = "cre1.ma") %>% select(colnames(pro)) %>% 
-  mutate_at(vars(brand_code,product_code,product_name,image_source_url,created_at),as.character) %>%
-  mutate_at(vars(product_id,org_price_cents,final_price_cents),as.integer) %>%
-  mutate_at(vars(shop_builder_created_at),as.logical)
-
-pro <-  rbind(pro,pro1)
-
-# pro <- pro %>% filter(brand_code %in% mlist)
-
+# 상품 정보
+pro <- fread(file.path(file_path,"products.csv"),encoding = "UTF-8")
+pro <- pro %>% filter(brand_code %in% mlist)
+# 카테고리 정보
 pro_cate <- fread(file.path(file_path,"product_categories.csv"),encoding = "UTF-8")
-# pro_cate <- pro_cate %>% filter(brand_code %in% mlist)
-
+pro_cate <- pro_cate %>% filter(brand_code %in% mlist)
 pro_cate2 <- fread(file.path(file_path,"brand_product_categorizations.csv"),encoding = "UTF-8")
-# pro_cate2 <- pro_cate2 %>% filter(brand_code %in% mlist)
-
-
-
-
+pro_cate2 <- pro_cate2 %>% filter(brand_code %in% mlist)
 
 
 
@@ -51,9 +38,7 @@ pro_cate2 <- fread(file.path(file_path,"brand_product_categorizations.csv"),enco
 falist <- as.list(fa$category)
 
 
-
 # 카테고리 이름 테이블
-# pro_cate2 <- pro_cate2 %>% filter(brand_code %in% mlist)
 pro_cate2 <- pro_cate2 %>% left_join(pro_cate %>% select(brand_code,id,name) %>% rename(product_category_id=id) ,by=c("brand_code","product_category_id"))
 pro_cate2 %>% glimpse
 rm(list=ls()[7])
@@ -98,21 +83,6 @@ pro$product_name <- gsub("크롭 셔츠","크셔츠",pro$product_name)
 pro$product_name <- gsub("크롭 티","크롭티",pro$product_name)
 pro$product_name <- gsub("크롭 t","크롭t",pro$product_name)
 
-
-mall1 <- c("merryaround.co.kr","holicholic.com","uptownholic.com")
-pro[brand_code %in% mall1,]$product_name <- gsub("jk","jacket",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("cd","cardigan",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("nb","knit",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("sl","slacks",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("bl","blouse",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("sk","skirt",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("mt","맨투맨",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("bby","coat",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("pt","pants",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("sh","shoes",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("ct","coat",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("jp","jumper",pro[brand_code %in% mall1,]$product_name)
-pro[brand_code %in% mall1,]$product_name <- gsub("kn","knit",pro[brand_code %in% mall1,]$product_name)
 
 pro <- pro %>% rename(category_name=name)
 pro$category_name[is.na(pro$category_name)] <- 0
@@ -205,10 +175,6 @@ rm(list=ls()[grep("clist",ls())])
 rm(list=ls()[grep("cnum",ls())])
 
 
-# fwrite(pro_test,"protest1.csv")
-# pro_test <- fread(file.path(file_path,"protest1.csv"),encoding = "UTF-8")
-
-
 
 
 pnum <- pro_test$product_name
@@ -233,13 +199,9 @@ pro_test$product_name2 <- unlist(plist)
 
 
 
-fwrite(pro_test,"protest2.csv")
-# pro_test <- fread(file.path(file_path,"protest1.csv"),encoding = "UTF-8")
-
 
   
 #최종 카테고리
-
 flist <-  future_map(1:leng, function(j)
   {
       if (pro_test$category_name2[j] == "" & pro_test$product_name2[j] == ""){
@@ -274,136 +236,9 @@ while(T){
 pro_test$final <- ""
 pro_test$final <- unlist(flist)
 
-  
-# pro_test <- 
-# pro_test %>% glimpse %>% select(brand_code,product_id,final) %>% rename(categry_2depth=final) %>% 
-# left_join(brand) %>% mutate(mallid_pid=paste0())
-
 
 getwd()
 fwrite(pro_test,"test.csv")
 gc()
 options(future.fork.multithreading.enable = FALSE)
-
-
-
-
-
-
-
-
-
-
-jplist <- c(".jp","jp.")
-
-
-table <- fread(file.path(file_path,"test.csv"),encoding = "UTF-8")
-table <- table[table$product_name!="",]
-table <- table[!grep(jplist, table$brand_code),]
-
-
-#통계확인
-unique(table$brand_code)
-length(unique(table$brand_code))
-total_perc <- table %>% group_by(final) %>% summarise(count=n())
-#전체 카테고리 비중
-total_perc1 <- total_perc %>% mutate(perc=percent(count/sum(total_perc$count), accuracy = 0.1))
-
-mall_perc <- table %>% group_by(brand_code) %>% summarise(total_count=n()) 
-
-mall_perc1 <- table %>% group_by(brand_code,final) %>% summarise(count=n()) %>% left_join(mall_perc ,by="brand_code") %>%
-  mutate(perc=count/total_count)
-#몰별 카테고리 비중 중 미 분류 22% 이상 몰
-mall_f <- mall_perc1 %>% filter(final=="non",perc >= 0.22) %>% mutate(perc=percent(perc, accuracy = 0.1))
-mall_f$brand_code
-
-avg <- mall_perc1 %>% group_by(brand_code) %>% summarise(max=max(perc))
-mall_g <- mall_perc1 %>% filter(perc >= mean(avg$max),final!="non") %>% mutate(perc=percent(perc, accuracy = 0.1))
-
-
-# 빈도수 확인
-
-table <- table[table$final=="non",c(3)]
-
-num <- round(dim(table)[1]/10000)+1
-num2 <- rep(10000,num)
-index <- rep(c(1:num),num2)
-index <- index[1:dim(table)[1]]
-table <- cbind(index,table)
-
-
-for (i in 1:num){
-f_text <- unlist(table[table$index==i],use.names = F)
-
-# utf-8 포멧
-f_text <- enc2utf8(f_text)
-# RcppMeCab 형태소 분리 토큰화 [doc_id로 매칭]
-f_result <- posParallel(f_text,join=FALSE,format="data.frame")
-# f_resultNN <-  f_result %>% filter(grepl("NN",f_result$pos))
-write.csv(f_result,paste0(i,".csv"))
-}
-
-
-library(foreach)
-
-token <- list.files(paste0(file_path,"/token"))
-
-foreach(i = 1:length(token),combine = rbind) %do% {
-tokens <- read.csv(paste0(file_path,"/token/",token[i]))
-}
-
-check <- tokens %>% group_by(token) %>% summarise(count=n()) %>% arrange(desc(count))
-
-
-
-# 미분류 상위 몰 리스트
-non_mall_list <- 
-c("kolonmall.com","byseries.com","kolonsport.com","247series.co.kr","en.stylenanda.com","archive-epke.com","eqlstore.com","folderstyle.com","magjay.com",
-  "maybe-baby.co.kr","miamasvin.co.kr","hanaunni.com","dabagirl.co.kr","loveme.kr","lsnmall.com","jp.66girls.com","ggsing.tw","holicholic.com","hotping.co.kr",
-  "ggsing.com","gumzzi.co.kr","orr.co.kr","nabbo.co.kr","badmintonmarket.co.kr","dodry.net","flymodel.co.kr","ganaswim.cn","fromheadtotoe.kr","11am.co.kr",
-  "helloyoonsoo.com","minibbong.co.kr","littleblack.co.kr","discosalon1.cafe24.com","heights-store.com","build.co.kr")
-ch_list <- c("jk","cd","nb","sl","bl","sk","mt","bby","pt","sh","ct","jp","kn")
-non_key <- table[table$final =="non",] %>% grepl(ch_list,table$product_name) %>% select(brand_code) %>% unique()
-
-
-
-
-# #랜덤추출
-# #카테고리비례추출
-# f_samplen <- table[table$final_cate != "non",] %>% arrange(final_cate) %>%
-#   group_by(final_cate)%>%
-#   summarise(Count=n()) %>%
-        #   mutate(calc=Count/dim(table)[1],
-#          sample_n=round(calc*2000)) 
-# 
-# f_samplen <- unlist(f_samplen[,4],use.names=F)
-# f_m <- strata('final_cate',size=f_samplen,method="srswor",data=table[table$final_cate != "non",] %>% arrange(final_cate))
-# sample <- getdata(table[table$final_cate != "non",] %>% arrange(final_cate),f_m)
-# 
-# write.csv(sample,"pro_sample.csv")
-
-
-
-
-# #검수
-# lp <- ""
-# names <- "line t shirts"
-# for (i in 1:length(deplist)){
-# 
-#   p <- if(sum(str_locate(names,deplist[[i]])[,2],na.rm=T)==0)
-#   {sum(str_locate(names,deplist[[i]])[,2],na.rm=T)}
-#   else if(sum(str_locate(names,deplist[[1]])[,2],na.rm=T)-sum(str_locate(names,deplist[[i]])[,1],na.rm=T)==0)
-#   {sum(str_locate(names,deplist[[i]])[,2],na.rm=T)-1}else{sum(str_locate(names,deplist[[i]])[,2],na.rm=T)}
-#   lp[i] <- p
-# }
-# paste(names(deplist)[which(lp==max(lp) & max(lp) != 0)],collapse = ",")
-
-# lc <- ""
-# cnames <- "베스트,베스트,자켓,베스트"
-# for (i in 1:length(deplist)){
-#   c <- sum(ifelse(str_detect(cnames,deplist[[i]]),1,0))
-#   lc[i] <- c
-#  
-# }
-# paste(names(deplist)[which(lc==max(lc) & max(lc) != 0)],collapse = ",")
 
